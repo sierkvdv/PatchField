@@ -3,22 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modular Synth</title>
-    <style>
-      body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system; background:#0b0d12; color:#e6e6e6; }
-      .toolbar { padding: 10px; border-bottom:1px solid #222; display:flex; gap:8px; align-items:center; position:sticky; top:0; background:#0b0d12; z-index:10;}
-      .rack { position: relative; height: calc(100vh - 52px); overflow: auto; }
-      .module { position:absolute; width: 220px; background:#141923; border:1px solid #282f3a; border-radius:16px; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
-      .module .handle { cursor: move; padding:10px 12px; border-bottom:1px solid #242b36; font-weight:600; background:#111620; border-top-left-radius:16px; border-top-right-radius:16px;}
-      .module .content { padding:10px 12px; display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-      .port { padding:6px 8px; border:1px solid #2d3644; border-radius:8px; text-align:center; font-size:12px; user-select:none; background:#19202b; }
-      .port.audio { background:#16222f; }
-      .port.control { background:#1f1b2a; }
-      .port.event { background:#231a1a; }
-      .btn { padding:6px 10px; border:1px solid #293140; background:#141a24; color:#e6e6e6; border-radius:8px; cursor:pointer;}
-      .btn.primary { background:#1a7cff; border-color:#1a7cff; color:white; }
-      .cable-hud { margin-left:auto; opacity:.8; font-size:12px; }
-    </style>
+    <title>Modular Synth (React + Tone.js)</title>
+    <link rel="icon" href="/favicon.svg" />
   </head>
   <body>
     <div id="root"></div>

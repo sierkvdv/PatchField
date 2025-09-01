@@ -1,12 +1,24 @@
 import React from 'react'
-import { useStore } from './store'
-import ModuleView from './ModuleView'
+import { usePatch, updateMouse } from '../patch/store'
+import { ModuleView } from './module/ModuleView'
+import { Wires } from './module/Wires'
 
-export default function Rack() {
-  const modules = useStore(s => s.modules)
+const Rack: React.FC = () => {
+  const modules = usePatch(s => s.modules)
+  const onMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    updateMouse(e.clientX - rect.left, e.clientY - rect.top)
+  }
+  const onTouchMove: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    const t = e.touches[0]; if (!t) return
+    updateMouse(t.clientX - rect.left, t.clientY - rect.top)
+  }
   return (
-    <div style={{position:'relative', width:'4000px', height:'2000px'}}>
+    <div className="rack" onMouseMove={onMouseMove} onTouchMove={onTouchMove}>
       {modules.map(m => <ModuleView key={m.id} mod={m} />)}
+      <Wires />
     </div>
   )
 }
+export default Rack
