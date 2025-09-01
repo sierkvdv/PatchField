@@ -1,6 +1,8 @@
 import * as Tone from 'tone'
 
-export type SignalKind = 'audio' | 'control' | 'param' | 'trigger' | 'gate' | 'clock'
+// Extend SignalKind to include 'event'.  Some modules expose ports
+// marked as kind 'event' to handle arbitrary trigger/gate/clock events.
+export type SignalKind = 'audio' | 'control' | 'param' | 'trigger' | 'gate' | 'clock' | 'event'
 
 export interface PortSpec {
   key: string
