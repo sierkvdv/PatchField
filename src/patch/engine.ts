@@ -44,6 +44,53 @@ function getRouter(src: RouterKey, sourceNode: PortRuntimeTarget): Tone.Gain {
   return g
 }
 
+// Normalize a port name to a canonical name. This allows UI port keys like
+// "freq" or "cutoff" to map to the runtime's expected port names. Only
+// aliases that differ from the canonical names need to be specified here.
+function normalizePortName(port: string): string {
+  // Convert to lowercase and strip whitespace and parentheses
+  const raw = String(port || '')
+  const key = raw.toLowerCase().replace(/[\s\(\)]+/g, '')
+  // Handle known aliases.  Note: only aliases that differ from the
+  // canonical port names need to be specified.  Most port names can
+  // be returned as-is after cleanup.
+  switch (key) {
+    // VCO frequency aliases
+    case 'freq':
+      return 'frequency'
+    // Filter cutoff aliases
+    case 'cutoff':
+      return 'cutoffCv'
+    case 'cutoffcv':
+      return 'cutoffCv'
+    // Parameter alias for resonance
+    case 'res':
+    case 'resonance':
+      return 'q'
+    // VCA and other CV aliases
+    case 'gain':
+    case 'amp':
+    case 'cvgain':
+      return 'cv'
+    // Mixer channel aliases
+    case 'ch1':
+    case 'in1':
+      return 'in1'
+    case 'ch2':
+    case 'in2':
+      return 'in2'
+    case 'ch3':
+    case 'in3':
+      return 'in3'
+    case 'ch4':
+    case 'in4':
+      return 'in4'
+    // Pass through known canonical names
+    default:
+      return port
+  }
+}
+
 export function connect(from: { module: ModuleInstance, portKey: string }, to: { module: ModuleInstance, portKey: string }, kind: Connection['kind']): () => void {
   const rFrom = ensureRuntime(from.module)
   const rTo = ensureRuntime(to.module)
@@ -59,8 +106,13 @@ export function connect(from: { module: ModuleInstance, portKey: string }, to: {
       if (arr.length === 0) eventRoutes.delete(routeK); else eventRoutes.set(routeK, arr)
     }
   }
-  const outNode = rFrom.getOut(from.portKey) as any
-  const inNode = rTo.getIn(to.portKey) as any
+  // Normalize port names before looking up nodes. Without this, a UI
+  // port like 'freq' would not match the runtime's 'frequency' input on
+  // the VCO. Missing nodes will trigger a warning and skip the connection.
+  const fromKey = normalizePortName(from.portKey)
+  const toKey = normalizePortName(to.portKey)
+  const outNode = rFrom.getOut(fromKey) as any
+  const inNode = rTo.getIn(toKey) as any
   if (!outNode || !inNode) { console.warn('Cannot connect: missing node', { from, to, kind }); return () => {} }
   const router = getRouter({ moduleId: from.module.id, portKey: from.portKey }, outNode)
   try { router.connect(inNode) } catch (e) { console.warn('Connect error', e) }
