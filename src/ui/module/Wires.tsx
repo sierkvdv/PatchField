@@ -41,5 +41,4 @@ export const Wires: React.FC = () => {
     }
   }
 
-  return <svg className="wire-layer">{items}{tempPath}</svg>
-}
+return <svg className="wire-layer" style={{ width: '100%', height: '100%' }}>{items}{tempPath}</svg>
