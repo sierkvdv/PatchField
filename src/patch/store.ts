@@ -186,9 +186,12 @@ export function loadDemoPatch() {
     beginPatch({ moduleId: idLfo, portKey: 'out', kind: 'control' })
     usePatch.getState().tryCompletePatch({ moduleId: idFil, portKey: 'cutoffCv', kind: 'control' })
 
-    // control -> param (allowed)
-    beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
-    usePatch.getState().tryCompletePatch({ moduleId: idVco, portKey: 'freq', kind: 'param' })
+        // control → control (sequencer CV modulates VCO frequency)
+        beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
+        // The VCO no longer exposes a "freq" parameter port in the UI.
+        // Instead it has a control‑rate input named "frequency".
+        // Use kind: 'control' here to reflect that this is a control connection.
+        usePatch.getState().tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
 
     beginPatch({ moduleId: idSeq, portKey: 'gate', kind: 'event' })
     usePatch.getState().tryCompletePatch({ moduleId: idEnv, portKey: 'trig', kind: 'event' })
