@@ -58,6 +58,9 @@ function normalizePortName(port: string): string {
     // VCO frequency aliases
     case 'freq':
       return 'frequency'
+    // Accept "freqcv" (e.g. "FREQ CV") as an alias for the frequency control
+    case 'freqcv':
+      return 'frequency'
     // Filter cutoff aliases
     case 'cutoff':
       return 'cutoffCv'
@@ -85,9 +88,13 @@ function normalizePortName(port: string): string {
     case 'ch4':
     case 'in4':
       return 'in4'
-    // Pass through known canonical names
+    // Pass through cleaned canonical names.  If no alias applies,
+    // return the de-spaced, lowercased key to avoid issues like
+    // "FREQ CV" not matching "freqcv".  This ensures that port
+    // identifiers with spaces or parentheses still resolve to
+    // sensible identifiers.
     default:
-      return port
+      return key
   }
 }
 

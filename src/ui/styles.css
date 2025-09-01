@@ -29,7 +29,7 @@ a{color:var(--accent-2);text-decoration:none}
 .jack.control{box-shadow:0 0 0 2px var(--wire-control) inset}
 .jack.event{box-shadow:0 0 0 2px var(--wire-event) inset}
 .jack-label{font-size:11px;color:var(--muted)}
-.wire-layer{position:absolute;inset:0;pointer-events:none}
+.wire-layer{position:absolute;inset:0;pointer-events:none;z-index:10}
 .wire{fill:none;stroke-width:3}
 .wire.audio{stroke:var(--wire-audio)}
 .wire.control{stroke:var(--wire-control)}
