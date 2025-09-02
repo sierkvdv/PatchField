@@ -15,6 +15,8 @@ import { SequencerUI, seqTemplate, createSeqRuntime } from './sequencer16'
 import { GateClockUI, gateClockTemplate, createGateClockRuntime } from './gateclock'
 import { ScopeUI, scopeTemplate, createScopeRuntime } from './oscilloscope'
 import { OutputUI, outputTemplate, createOutputRuntime } from './output'
+import { EnvFollowerUI, envFollowerTemplate, createEnvFollowerRuntime } from './envfollower'
+import { CvToAudioUI, cvToAudioTemplate, createCvToAudioRuntime } from './cvtoaudiomod'
 
 type Tpl = { title: string, defaults: Record<string, any>, ports: PortSpec[] }
 const templates: Record<ModuleType, Tpl> = {
@@ -22,11 +24,16 @@ const templates: Record<ModuleType, Tpl> = {
   VCA: vcaTemplate, Mixer4: mixerTemplate, Multiple: multipleTemplate, Attenuator: attenTemplate,
   Delay: delayTemplate, Reverb: reverbTemplate, GateClock: gateClockTemplate, Sequencer16: seqTemplate,
   Oscilloscope: scopeTemplate, Output: outputTemplate,
+  // extra utility modules
+  EnvFollower: envFollowerTemplate as any,
+  CvToAudio: cvToAudioTemplate as any,
 }
 const UIs: Record<ModuleType, React.FC<{ mod: ModuleInstance }>> = {
   VCO: VCOUI, Noise: NoiseUI, ADSR: ADSRUI, LFO: LFOUI, Filter: FilterUI, VCA: VCAUI, Mixer4: MixerUI,
   Multiple: MultipleUI, Attenuator: AttenuatorUI, Delay: DelayUI, Reverb: ReverbUI, GateClock: GateClockUI,
   Sequencer16: SequencerUI, Oscilloscope: ScopeUI, Output: OutputUI,
+  EnvFollower: EnvFollowerUI as any,
+  CvToAudio: CvToAudioUI as any,
 }
 
 export function getModuleTemplate(type: ModuleType) { return templates[type] }
@@ -48,5 +55,7 @@ export function createRuntimeForModule(mod: ModuleInstance): ModuleRuntime {
     case 'Sequencer16': return createSeqRuntime(mod)
     case 'Oscilloscope': return createScopeRuntime(mod)
     case 'Output': return createOutputRuntime(mod)
+    case 'EnvFollower': return createEnvFollowerRuntime(mod as any)
+    case 'CvToAudio': return createCvToAudioRuntime(mod as any)
   }
 }

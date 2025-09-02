@@ -14,7 +14,7 @@ export interface PortSpec {
 export type ModuleType =
   | 'VCO' | 'Noise' | 'ADSR' | 'LFO' | 'Filter' | 'VCA' | 'Mixer4'
   | 'Multiple' | 'Attenuator' | 'Delay' | 'Reverb' | 'GateClock'
-  | 'Sequencer16' | 'Oscilloscope' | 'Output'
+  | 'Sequencer16' | 'Oscilloscope' | 'Output' | 'EnvFollower'
 
 export interface ModuleInstance {
   id: string

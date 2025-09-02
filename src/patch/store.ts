@@ -21,6 +21,7 @@ interface State {
 
   setParam: (id: string, param: string, value: any) => void
   setPortPos: (id: string, port: string, pos: PortPos) => void
+  removeConnectionsForPort: (id: string, port: string) => void
 
   beginPatch: (from: { moduleId: string, portKey: string, kind: Connection['kind'] }) => void
   updateMouse: (x: number, y: number) => void
@@ -65,6 +66,14 @@ export const usePatch = create<State>((set, get) => ({
   },
 
   setPortPos: (id, port, pos) => set(s => ({ portPos: { ...s.portPos, [portKey(id, port)]: pos } })),
+
+  // Remove all connections that start or end at a given module port
+  removeConnectionsForPort: (id, port) => set(s => {
+    const toRemove = s.connections.filter(c => (c.from.moduleId === id && c.from.portKey === port) || (c.to.moduleId === id && c.to.portKey === port))
+    // Call disconnect if present
+    toRemove.forEach((c:any) => c.__disconnect?.())
+    return { connections: s.connections.filter(c => !toRemove.includes(c)) }
+  }),
 
   patchFrom: undefined,
   mouse: undefined,

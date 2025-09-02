@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react'
 import { beginPatch, setPortPos, tryCompletePatch, usePatch } from '../../patch/store'
+import { usePatch as usePatchStore } from '../../patch/store'
 import { Connection } from '../../patch/types'
 
 /**
@@ -82,6 +83,12 @@ export const Jack: React.FC<{
     tryCompletePatch({ moduleId, portKey, kind })
   }
 
+  // Contextmenu/right-click: remove all existing connections for this port to make re-patching easy
+  const onContextMenu: React.MouseEventHandler = (e) => {
+    e.preventDefault(); e.stopPropagation()
+    usePatchStore.getState().removeConnectionsForPort(moduleId, portKey)
+  }
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       {direction === 'in' && <span className="jack-label">{label}</span>}
@@ -91,6 +98,7 @@ export const Jack: React.FC<{
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
         onClick={onClick}
+        onContextMenu={onContextMenu}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
         title={`${direction} ${label}`}

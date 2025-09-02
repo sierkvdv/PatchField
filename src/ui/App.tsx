@@ -46,6 +46,8 @@ const App: React.FC = () => {
         <button className="btn" onClick={() => addModule('Reverb')}>+ Reverb</button>
         <button className="btn" onClick={() => addModule('Multiple')}>+ Multiple</button>
         <button className="btn" onClick={() => addModule('Attenuator')}>+ Attenuator</button>
+        <button className="btn" onClick={() => addModule('EnvFollower')}>+ Env Follower</button>
+        <button className="btn" onClick={() => addModule('CvToAudio')}>+ CV → Audio</button>
         <button className="btn" onClick={() => addModule('Sequencer16')}>+ Sequencer</button>
         <button className="btn" onClick={() => addModule('GateClock')}>+ Gate/Clock</button>
         <button className="btn" onClick={() => addModule('Oscilloscope')}>+ Oscilloscope</button>
