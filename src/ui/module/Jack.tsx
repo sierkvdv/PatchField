@@ -28,7 +28,7 @@ export const Jack: React.FC<{
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update)
     return () => { clearTimeout(t1); clearTimeout(t2); ro.disconnect(); window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update) }
-  }, [moduleId, portKey])
+])
 
   const onMouseDown: React.MouseEventHandler = (e) => { e.stopPropagation(); beginPatch({ moduleId, portKey, kind }) }
   const onMouseUp: React.MouseEventHandler = (e) => { e.stopPropagation(); tryCompletePatch({ moduleId, portKey, kind }) }
