@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, useRef } from 'react'
-
 import { beginPatch, setPortPos, tryCompletePatch, usePatch } from '../../patch/store'
 import { Connection } from '../../patch/types'
 
@@ -13,7 +12,7 @@ export const Jack: React.FC<{
   moduleId: string
   portKey: string
   label: string
-  direction: 'in' | 'out'
+  direction: 'in'|'out'
   kind: Connection['kind']
 }> = ({ moduleId, portKey, label, direction, kind }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -43,7 +42,7 @@ export const Jack: React.FC<{
     const ro = new ResizeObserver(update)
     ro.observe(el)
 
-    // Listen for scroll and resize events with capture mode (true)
+    // Listen for scroll and resize events with capture mode (true) to keep cables anchored when the page scrolls
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update, true)
 
@@ -97,4 +96,3 @@ export const Jack: React.FC<{
     </div>
   )
 }
-
