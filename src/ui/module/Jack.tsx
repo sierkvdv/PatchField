@@ -3,6 +3,12 @@ import React, { useLayoutEffect, useRef } from 'react'
 import { beginPatch, setPortPos, tryCompletePatch, usePatch } from '../../patch/store'
 import { Connection } from '../../patch/types'
 
+/**
+ * Jack component representing an input or output port on a module.
+ * This version ensures port positions are recalculated on scroll and resize
+ * events using capture mode and cleans up listeners correctly. Patch cables
+ * will stay anchored when the user scrolls.
+ */
 export const Jack: React.FC<{
   moduleId: string
   portKey: string
@@ -17,6 +23,8 @@ export const Jack: React.FC<{
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
+
+    // Updates the stored port position relative to the rack
     const update = () => {
       const rect = el.getBoundingClientRect()
       const rack = document.querySelector('.rack')!.getBoundingClientRect()
@@ -25,22 +33,31 @@ export const Jack: React.FC<{
         y: rect.top - rack.top + rect.height / 2,
       })
     }
+
+    // Initial updates and slight delays to catch animations
     update()
     const t1 = setTimeout(update, 50)
     const t2 = setTimeout(update, 200)
+
+    // Observe size changes of the jack itself
     const ro = new ResizeObserver(update)
     ro.observe(el)
+
+    // Listen for scroll and resize events with capture mode (true)
     window.addEventListener('scroll', update, true)
-    window.addEventListener('resize', update)
+    window.addEventListener('resize', update, true)
+
+    // Cleanup when component unmounts
     return () => {
       clearTimeout(t1)
       clearTimeout(t2)
       ro.disconnect()
       window.removeEventListener('scroll', update, true)
-      window.removeEventListener('resize', update)
+      window.removeEventListener('resize', update, true)
     }
   })
 
+  // Start a patch from this jack on mouse/touch interactions
   const onMouseDown: React.MouseEventHandler = (e) => {
     e.stopPropagation()
     beginPatch({ moduleId, portKey, kind })
@@ -80,3 +97,4 @@ export const Jack: React.FC<{
     </div>
   )
 }
+
