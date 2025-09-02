@@ -27,7 +27,7 @@ export const Jack: React.FC<{
     ro.observe(el)
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update)
-    return () => { clearTimeout(t1); clearTimeout(t2); ro.disconnect(); window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update) }
+    return () => { clearTimeout(t1); clearTimeout(t2); ro.disconnect(); window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update) })
 }
 
   const onMouseDown: React.MouseEventHandler = (e) => { e.stopPropagation(); beginPatch({ moduleId, portKey, kind }) }
