@@ -7,18 +7,23 @@ export const Jack: React.FC<{
   moduleId: string
   portKey: string
   label: string
-  direction: 'in'|'out'
+  direction: 'in' | 'out'
   kind: Connection['kind']
 }> = ({ moduleId, portKey, label, direction, kind }) => {
   const ref = useRef<HTMLDivElement>(null)
-  const patchFrom = usePatch(s => s.patchFrom)
+  const patchFrom = usePatch((s) => s.patchFrom)
 
+  // Update port position and attach/detach listeners on mount/unmount
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const update = () => {
-      const rect = el.getBoundingClientRect()      const rack = document.querySelector('.rack')!.getBoundingClientRect()
-      setPortPos(moduleId, portKey, { x: rect.left - rack.left + rect.width/2, y: rect.top - rack.top + rect.height/2 })
+      const rect = el.getBoundingClientRect()
+      const rack = document.querySelector('.rack')!.getBoundingClientRect()
+      setPortPos(moduleId, portKey, {
+        x: rect.left - rack.left + rect.width / 2,
+        y: rect.top - rack.top + rect.height / 2,
+      })
     }
     update()
     const t1 = setTimeout(update, 50)
@@ -27,21 +32,36 @@ export const Jack: React.FC<{
     ro.observe(el)
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update)
-         return () => {
-        clearTimeout(t1)
-        clearTimeout(t2)
-        ro.disconnect()
-              window.removeEventListener('scroll', update, true)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      ro.disconnect()
+      window.removeEventListener('scroll', update, true)
       window.removeEventListener('resize', update)
     }
-  )})
+  })
 
-}
-
-  const onMouseUp: React.MouseEventHandler = (e) => { e.stopPropagation(); tryCompletePatch({ moduleId, portKey, kind }) }
-  const onClick: React.MouseEventHandler = (e) => { e.stopPropagation(); if (patchFrom) tryCompletePatch({ moduleId, portKey, kind }); else beginPatch({ moduleId, portKey, kind }) }
-  const onTouchStart: React.TouchEventHandler = (e) => { e.stopPropagation(); beginPatch({ moduleId, portKey, kind }) }
-  const onTouchEnd: React.TouchEventHandler = (e) => { e.stopPropagation(); tryCompletePatch({ moduleId, portKey, kind }) }
+  const onMouseDown: React.MouseEventHandler = (e) => {
+    e.stopPropagation()
+    beginPatch({ moduleId, portKey, kind })
+  }
+  const onMouseUp: React.MouseEventHandler = (e) => {
+    e.stopPropagation()
+    tryCompletePatch({ moduleId, portKey, kind })
+  }
+  const onClick: React.MouseEventHandler = (e) => {
+    e.stopPropagation()
+    if (patchFrom) tryCompletePatch({ moduleId, portKey, kind })
+    else beginPatch({ moduleId, portKey, kind })
+  }
+  const onTouchStart: React.TouchEventHandler = (e) => {
+    e.stopPropagation()
+    beginPatch({ moduleId, portKey, kind })
+  }
+  const onTouchEnd: React.TouchEventHandler = (e) => {
+    e.stopPropagation()
+    tryCompletePatch({ moduleId, portKey, kind })
+  }
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
