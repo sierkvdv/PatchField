@@ -25,10 +25,14 @@ export const Jack: React.FC<{
     // Updates the stored port position relative to the rack
     const update = () => {
       const rect = el.getBoundingClientRect()
-      const rack = document.querySelector('.rack')!.getBoundingClientRect()
+      const rackEl = document.querySelector('.rack') as HTMLElement
+      if (!rackEl) return
+      const rack = rackEl.getBoundingClientRect()
+      // Include scroll offsets so coordinates are relative to the rack's
+      // scrollable content origin, not just the visible viewport.
       setPortPos(moduleId, portKey, {
-        x: rect.left - rack.left + rect.width / 2,
-        y: rect.top - rack.top + rect.height / 2,
+        x: rect.left - rack.left + rackEl.scrollLeft + rect.width / 2,
+        y: rect.top - rack.top + rackEl.scrollTop + rect.height / 2,
       })
     }
 
@@ -53,7 +57,7 @@ export const Jack: React.FC<{
       window.removeEventListener('scroll', update, true)
       window.removeEventListener('resize', update, true)
     }
-  })
+  }, [moduleId, portKey])
 
   // Start a patch from this jack on mouse/touch interactions
   const onMouseDown: React.MouseEventHandler = (e) => {

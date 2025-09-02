@@ -56,7 +56,7 @@ const App: React.FC = () => {
         <button className="btn danger" onClick={() => { if (confirm('Clear all modules?')) resetAll() }}>Clear</button>
         <button className="btn" onClick={() => loadDemoPatch()}>Load Demo</button>
       </div>
-      <div className="rack"><Rack /></div>
+      <Rack />
     </>
   )
 }

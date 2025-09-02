@@ -13,7 +13,11 @@ function getFallbackPos(moduleId: string): {x:number,y:number} | null {
   if (!rack || !el) return null
   const rRect = rack.getBoundingClientRect()
   const mRect = el.getBoundingClientRect()
-  return { x: mRect.left - rRect.left + mRect.width/2, y: mRect.top - rRect.top + mRect.height/2 }
+  // Include rack scroll offsets so fallback positions align while scrolling
+  return {
+    x: mRect.left - rRect.left + rack.scrollLeft + mRect.width / 2,
+    y: mRect.top - rRect.top + rack.scrollTop + mRect.height / 2,
+  }
 }
 
 export const Wires: React.FC = () => {
@@ -46,8 +50,14 @@ export const Wires: React.FC = () => {
     }
   }
 
+  // Make the SVG match the scrollable content size, not just the viewport.
+  const rack = document.querySelector('.rack') as HTMLElement | null
+  const svgStyle: React.CSSProperties = rack
+    ? { width: rack.scrollWidth, height: rack.scrollHeight }
+    : { width: '100%', height: '100%' }
+
   return (
-    <svg className="wire-layer" style={{ width: '100%', height: '100%' }}>
+    <svg className="wire-layer" style={svgStyle}>
       {items}
       {tempPath}
     </svg>
