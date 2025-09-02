@@ -31,9 +31,10 @@ export const Jack: React.FC<{
         clearTimeout(t1)
         clearTimeout(t2)
         ro.disconnect()
-        window.removeEventListener('scroll', update, true)
-        window.removeEventListener('resize', update)
-         })
+              window.removeEventListener('scroll', update, true)
+      window.removeEventListener('resize', update)
+    }
+  )})
 
 }
 
