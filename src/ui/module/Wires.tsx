@@ -32,13 +32,25 @@ export const Wires: React.FC = () => {
   })
 
   let tempPath: JSX.Element | null = null
-  if (patchFrom && mouse) {
+   if (patchFrom && mouse) {
     const a = portPos[`${patchFrom.moduleId}:${patchFrom.portKey}`] || getFallbackPos(patchFrom.moduleId)
     if (a) {
       const p = pathBetween(a, mouse)
-      const cls = patchFrom.kind === 'event' ? 'event' : (patchFrom.kind === 'param' || patchFrom.kind === 'control' ? 'control' : 'audio')
+      const cls =
+        patchFrom.kind === 'event'
+          ? 'event'
+          : patchFrom.kind === 'param' || patchFrom.kind === 'control'
+          ? 'control'
+          : 'audio'
       tempPath = <path className={`wire ${cls}`} d={p} />
     }
   }
 
-return <svg className="wire-layer" style={{ width: '100%', height: '100%' }}>{items}{tempPath}</svg>
+  return (
+    <svg className="wire-layer" style={{ width: '100%', height: '100%' }}>
+      {items}
+      {tempPath}
+    </svg>
+  )
+}
+

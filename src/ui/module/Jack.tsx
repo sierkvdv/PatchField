@@ -5,14 +5,13 @@ import { Connection } from '../../patch/types'
 /**
  * Jack component representing an input or output port on a module.
  * This version ensures port positions are recalculated on scroll and resize
- * events using capture mode and cleans up listeners correctly. Patch cables
- * will stay anchored when the user scrolls.
+ * events using capture mode and cleans up listeners correctly.
  */
 export const Jack: React.FC<{
   moduleId: string
   portKey: string
   label: string
-  direction: 'in'|'out'
+  direction: 'in' | 'out'
   kind: Connection['kind']
 }> = ({ moduleId, portKey, label, direction, kind }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -42,7 +41,7 @@ export const Jack: React.FC<{
     const ro = new ResizeObserver(update)
     ro.observe(el)
 
-    // Listen for scroll and resize events with capture mode (true) to keep cables anchored when the page scrolls
+    // Listen for scroll and resize events with capture mode (true)
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update, true)
 
