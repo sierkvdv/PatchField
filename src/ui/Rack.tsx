@@ -1,5 +1,5 @@
 import React from 'react'
-import { usePatch, updateMouse } from '../patch/store'
+import { usePatch, updateMouse, cancelPatch } from '../patch/store'
 import { ModuleView } from './module/ModuleView'
 import { Wires } from './module/Wires'
 
@@ -16,8 +16,15 @@ const Rack: React.FC = () => {
     const t = e.touches[0]; if (!t) return
     updateMouse(t.clientX - rect.left + rackEl.scrollLeft, t.clientY - rect.top + rackEl.scrollTop)
   }
+  const onMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    // Klik op lege ruimte annuleert tijdelijk patchen
+    const target = e.target as HTMLElement
+    if (!target.closest('.jack')) {
+      cancelPatch()
+    }
+  }
   return (
-    <div className="rack" onMouseMove={onMouseMove} onTouchMove={onTouchMove}>
+    <div className="rack" onMouseMove={onMouseMove} onTouchMove={onTouchMove} onMouseDown={onMouseDown}>
       {modules.map(m => <ModuleView key={m.id} mod={m} />)}
       <Wires />
     </div>

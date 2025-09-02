@@ -85,14 +85,29 @@ export const usePatch = create<State>((set, get) => ({
 
     const fromMod = get().modules.find(m => m.id === from.moduleId)!
     const toMod = get().modules.find(m => m.id === to.moduleId)!
+
+    // Determine jack directions from module port specs
+    const fromSpec = fromMod?.ports?.find(p => p.key === from.portKey)
+    const toSpec = toMod?.ports?.find(p => p.key === to.portKey)
+    const fromDir = fromSpec?.direction
+    const toDir = toSpec?.direction
+
+    // If either port not found, or both ports are inputs or both outputs, cancel
+    if (!fromDir || !toDir || fromDir === toDir) { set({ patchFrom: undefined }); return }
+
+    // Ensure connection is always from an output to an input, regardless of click order
+    const outEnd = fromDir === 'out' ? { module: fromMod, id: from.moduleId, port: from.portKey } : { module: toMod, id: to.moduleId, port: to.portKey }
+    const inEnd  = fromDir === 'out' ? { module: toMod, id: to.moduleId, port: to.portKey }   : { module: fromMod, id: from.moduleId, port: from.portKey }
+
     const id = nanoid()
     const conn: Connection = {
       id,
-      from: { moduleId: from.moduleId, portKey: from.portKey },
-      to: { moduleId: to.moduleId, portKey: to.portKey },
+      from: { moduleId: outEnd.id, portKey: outEnd.port },
+      to: { moduleId: inEnd.id, portKey: inEnd.port },
       kind: resultKind
     }
-    const disconnect = doConnect({ module: fromMod, portKey: from.portKey }, { module: toMod, portKey: to.portKey }, resultKind)
+
+    const disconnect = doConnect({ module: outEnd.module, portKey: outEnd.port }, { module: inEnd.module, portKey: inEnd.port }, resultKind)
     ;(conn as any).__disconnect = disconnect
     set(s => ({ connections: [...s.connections, conn], patchFrom: undefined }))
   },
