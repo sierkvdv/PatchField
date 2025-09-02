@@ -53,8 +53,8 @@ export const Wires: React.FC = () => {
   // Make the SVG match the scrollable content size, not just the viewport.
   const rack = document.querySelector('.rack') as HTMLElement | null
   const svgStyle: React.CSSProperties = rack
-    ? { width: rack.scrollWidth, height: rack.scrollHeight }
-    : { width: '100%', height: '100%' }
+    ? { width: rack.scrollWidth, height: rack.scrollHeight, overflow: 'visible' }
+    : { width: '100%', height: '100%', overflow: 'visible' }
 
   return (
     <svg className="wire-layer" style={svgStyle}>

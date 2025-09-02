@@ -60,15 +60,7 @@ export const Jack: React.FC<{
     }
   }, [moduleId, portKey])
 
-  // Start a patch from this jack on mouse/touch interactions
-  const onMouseDown: React.MouseEventHandler = (e) => {
-    e.stopPropagation()
-    beginPatch({ moduleId, portKey, kind })
-  }
-  const onMouseUp: React.MouseEventHandler = (e) => {
-    e.stopPropagation()
-    tryCompletePatch({ moduleId, portKey, kind })
-  }
+  // Click toggles patch begin/complete (avoids mousedown/up self-connections)
   const onClick: React.MouseEventHandler = (e) => {
     e.stopPropagation()
     if (patchFrom) tryCompletePatch({ moduleId, portKey, kind })
@@ -95,12 +87,12 @@ export const Jack: React.FC<{
       <div
         ref={ref}
         className={`jack ${direction} ${kind === 'event' ? 'event' : kind}`}
-        onMouseDown={onMouseDown}
-        onMouseUp={onMouseUp}
         onClick={onClick}
         onContextMenu={onContextMenu}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        data-module-id={moduleId}
+        data-port-key={portKey}
         title={`${direction} ${label}`}
       />
       {direction === 'out' && <span className="jack-label">{label}</span>}
