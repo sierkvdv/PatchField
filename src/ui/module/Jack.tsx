@@ -35,6 +35,7 @@ export const Jack: React.FC<{
         window.removeEventListener('resize', update)
       }
     })
+
 }
 
   const onMouseDown: React.MouseEventHandler = (e) => { e.stopPropagation(); beginPatch({ moduleId, portKey, kind }) }
