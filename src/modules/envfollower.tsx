@@ -16,7 +16,8 @@ export const envFollowerTemplate = {
 export function createEnvFollowerRuntime(mod: ModuleInstance): ModuleRuntime {
   // Audio input into a meter, periodically sample level and write to a control Signal
   const input = new Tone.Gain(1)
-  const meter = new Tone.Meter({ channels: 1, smoothing: mod.params.smoothing })
+  // Tone.Meter(options) in current Tone.js accepts only 'smoothing'. Channels is fixed by the node.
+  const meter = new Tone.Meter({ smoothing: mod.params.smoothing } as any)
   input.connect(meter)
   const out = new Tone.Signal(0)
   const loop = new Tone.Loop(() => {
