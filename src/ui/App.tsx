@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import * as Tone from 'tone'
 import Rack from './Rack'
 import {
@@ -12,12 +12,14 @@ import {
 } from '../patch/store'
 
 const App: React.FC = () => {
-  useEffect(() => {
-    // Zorg dat er een Output is
-    addModule('Output', { x: 1100, y: 120 })
-  }, [])
+  // Haal de Output‑module niet meer automatisch op; de demo’s maken die zelf aan.
 
-  const startAudio = async () => { await Tone.start(); Tone.Transport.start() }
+  // Start het audiosysteem van Tone.js na een gebruikersactie
+  const startAudio = () => {
+    Tone.start().then(() => {
+      Tone.Transport.start()
+    })
+  }
 
   const onSave = () => {
     const data = serializePatch()
@@ -46,7 +48,7 @@ const App: React.FC = () => {
     <>
       <div className="toolbar">
         <div className="title">🔌 Modular Synth (React + Tone.js)</div>
-        {/* module knoppen */}
+        {/* Moduleknoppen */}
         <button className="btn" onClick={() => addModule('VCO')}>+ VCO</button>
         <button className="btn" onClick={() => addModule('ADSR')}>+ ADSR</button>
         <button className="btn" onClick={() => addModule('VCA')}>+ VCA</button>
@@ -64,18 +66,26 @@ const App: React.FC = () => {
         <button className="btn" onClick={() => addModule('GateClock')}>+ Gate/Clock</button>
         <button className="btn" onClick={() => addModule('Oscilloscope')}>+ Oscilloscope</button>
         <div className="spacer" />
-        {/* algemene acties */}
+        {/* Algemene acties */}
         <button className="btn good" onClick={startAudio}>Start Audio</button>
         <button className="btn" onClick={onSave}>Save Patch</button>
         <button className="btn" onClick={onLoad}>Load Patch</button>
         <button
           className="btn danger"
           onClick={() => { if (confirm('Clear all modules?')) resetAll() }}
-        >Clear</button>
-        {/* nieuwe demo knoppen */}
-        <button className="btn" onClick={() => loadBasslineDemo()}>Demo: Bassline</button>
-        <button className="btn" onClick={() => loadLfoDemo()}>Demo: LFO</button>
-        <button className="btn" onClick={() => loadFxDemo()}>Demo: FX Chain</button>
+        >
+          Clear
+        </button>
+        {/* Demo-knoppen: starten audio én laden demo */}
+        <button className="btn" onClick={() => { startAudio(); loadBasslineDemo() }}>
+          Demo: Bassline
+        </button>
+        <button className="btn" onClick={() => { startAudio(); loadLfoDemo() }}>
+          Demo: LFO
+        </button>
+        <button className="btn" onClick={() => { startAudio(); loadFxDemo() }}>
+          Demo: FX Chain
+        </button>
       </div>
       <Rack />
     </>
