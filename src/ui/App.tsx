@@ -12,13 +12,11 @@ import {
 } from '../patch/store'
 
 const App: React.FC = () => {
-  // Haal de Output‑module niet meer automatisch op; de demo’s maken die zelf aan.
+  // Verwijderd: automatisch Output toevoegen. Demo’s maken zelf een Output.
 
-  // Start het audiosysteem van Tone.js na een gebruikersactie
-  const startAudio = () => {
-    Tone.start().then(() => {
-      Tone.Transport.start()
-    })
+  // Start het audiosysteem van Tone.js en keer pas terug zodra het klaar is
+  const startAudio = async () => {
+    await Tone.start()        // AudioContext wordt hier gestart op basis van user gesture
   }
 
   const onSave = () => {
@@ -44,6 +42,14 @@ const App: React.FC = () => {
     input.click()
   }
 
+  // Asynchrone helper voor demo’s: wacht op Tone.start(), laad de demo, start de transport
+  const handleDemo = async (demoFunc: () => void) => {
+    // Deze functie wordt uitgevoerd als de gebruiker de button klikt (echte user gesture)
+    await startAudio()
+    demoFunc()
+    Tone.Transport.start()
+  }
+
   return (
     <>
       <div className="toolbar">
@@ -67,7 +73,9 @@ const App: React.FC = () => {
         <button className="btn" onClick={() => addModule('Oscilloscope')}>+ Oscilloscope</button>
         <div className="spacer" />
         {/* Algemene acties */}
-        <button className="btn good" onClick={startAudio}>Start Audio</button>
+        <button className="btn good" onClick={() => { startAudio().then(() => Tone.Transport.start()) }}>
+          Start Audio
+        </button>
         <button className="btn" onClick={onSave}>Save Patch</button>
         <button className="btn" onClick={onLoad}>Load Patch</button>
         <button
@@ -76,14 +84,14 @@ const App: React.FC = () => {
         >
           Clear
         </button>
-        {/* Demo-knoppen: starten audio én laden demo */}
-        <button className="btn" onClick={() => { startAudio(); loadBasslineDemo() }}>
+        {/* Demo-knoppen: eerst audio starten, daarna patch laden */}
+        <button className="btn" onClick={() => handleDemo(loadBasslineDemo)}>
           Demo: Bassline
         </button>
-        <button className="btn" onClick={() => { startAudio(); loadLfoDemo() }}>
+        <button className="btn" onClick={() => handleDemo(loadLfoDemo)}>
           Demo: LFO
         </button>
-        <button className="btn" onClick={() => { startAudio(); loadFxDemo() }}>
+        <button className="btn" onClick={() => handleDemo(loadFxDemo)}>
           Demo: FX Chain
         </button>
       </div>
