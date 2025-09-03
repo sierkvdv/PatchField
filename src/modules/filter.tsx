@@ -1,8 +1,8 @@
 import React from 'react'
 import * as Tone from 'tone'
-import { Jack } from '../ui/module/Jack'
 import { ModuleInstance, ModuleRuntime, PortSpec } from '../patch/types'
 import { setParam } from '../patch/store'
+import { Jack } from '../ui/module/Jack'
 
 export const filterTemplate = {
   title: 'Filter (VCF)',
@@ -14,6 +14,9 @@ export const filterTemplate = {
   ],
 }
 
+/**
+ * Runtime logic: build the Tone.Filter node and expose its inputs/outputs.
+ */
 export function createFilterRuntime(mod: ModuleInstance): ModuleRuntime {
   const f = new Tone.Filter({
     frequency: mod.params?.frequency ?? 800,
@@ -45,13 +48,18 @@ export function createFilterRuntime(mod: ModuleInstance): ModuleRuntime {
   }
 }
 
+/**
+ * React component for the Filter UI.
+ * Provides controls for filter type, cutoff and resonance, and jacks for IN/OUT/CUTOFF CV.
+ */
 export const FilterUI: React.FC<{ mod: ModuleInstance }> = ({ mod }) => (
   <div className="col">
+    {/* Parameter controls */}
     <div className="row">
       <div className="select">
         <label>Type</label>
         <select value={mod.params.type} onChange={e => setParam(mod.id, 'type', e.target.value)}>
-          {/* Gebruik de Tone.js canonical values */}
+          {/* Canonical Tone.js filter types */}
           <option value="lowpass">low-pass</option>
           <option value="highpass">high-pass</option>
           <option value="bandpass">band-pass</option>
@@ -80,9 +88,9 @@ export const FilterUI: React.FC<{ mod: ModuleInstance }> = ({ mod }) => (
         />
       </div>
     </div>
-    {/* Jacks voor input, output en cutoff‑CV */}
-    <Jack mod={mod} portKey="in" />
-    <Jack mod={mod} portKey="out" />
-    <Jack mod={mod} portKey="cutoffCv" />
+    {/* Jacks: use explicit props expected by <Jack> */}
+    <Jack moduleId={mod.id} portKey="in" label="IN" direction="in" kind="audio" />
+    <Jack moduleId={mod.id} portKey="out" label="OUT" direction="out" kind="audio" />
+    <Jack moduleId={mod.id} portKey="cutoffCv" label="CUTOFF CV" direction="in" kind="control" />
   </div>
 )
