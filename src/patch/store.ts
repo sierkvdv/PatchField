@@ -53,23 +53,39 @@ export const usePatch = create<State>((set, get) => ({
   },
 
   removeModule: (id) => {
-    set(s => ({ modules: s.modules.filter(m => m.id !== id), connections: s.connections.filter(c => c.from.moduleId !== id && c.to.moduleId !== id) }))
+    set(s => ({
+      modules: s.modules.filter(m => m.id !== id),
+      connections: s.connections.filter(c =>
+        c.from.moduleId !== id && c.to.moduleId !== id
+      )
+    }))
     disposeRuntime(id)
   },
 
-  moveModule: (id, x, y) => set(s => ({ modules: s.modules.map(m => m.id === id ? { ...m, x, y } : m) })),
+  moveModule: (id, x, y) =>
+    set(s => ({
+      modules: s.modules.map(m => m.id === id ? { ...m, x, y } : m)
+    })),
 
   setParam: (id, param, value) => {
-    set(s => ({ modules: s.modules.map(m => m.id === id ? { ...m, params: { ...m.params, [param]: value } } : m) }))
+    set(s => ({
+      modules: s.modules.map(m => m.id === id
+        ? { ...m, params: { ...m.params, [param]: value } }
+        : m)
+    }))
     const mod = get().modules.find(m => m.id === id)
     if (mod) { const rt = ensureRuntime(mod); rt.update?.(mod) }
   },
 
-  setPortPos: (id, port, pos) => set(s => ({ portPos: { ...s.portPos, [portKey(id, port)]: pos } })),
+  setPortPos: (id, port, pos) =>
+    set(s => ({ portPos: { ...s.portPos, [portKey(id, port)]: pos } })),
 
   // Remove all connections that start or end at a given module port
   removeConnectionsForPort: (id, port) => set(s => {
-    const toRemove = s.connections.filter(c => (c.from.moduleId === id && c.from.portKey === port) || (c.to.moduleId === id && c.to.portKey === port))
+    const toRemove = s.connections.filter(c =>
+      (c.from.moduleId === id && c.from.portKey === port) ||
+      (c.to.moduleId === id && c.to.portKey === port)
+    )
     // Call disconnect if present
     toRemove.forEach((c:any) => c.__disconnect?.())
     return { connections: s.connections.filter(c => !toRemove.includes(c)) }
@@ -105,8 +121,12 @@ export const usePatch = create<State>((set, get) => ({
     if (!fromDir || !toDir || fromDir === toDir) { set({ patchFrom: undefined }); return }
 
     // Ensure connection is always from an output to an input, regardless of click order
-    const outEnd = fromDir === 'out' ? { module: fromMod, id: from.moduleId, port: from.portKey } : { module: toMod, id: to.moduleId, port: to.portKey }
-    const inEnd  = fromDir === 'out' ? { module: toMod, id: to.moduleId, port: to.portKey }   : { module: fromMod, id: from.moduleId, port: from.portKey }
+    const outEnd = fromDir === 'out'
+      ? { module: fromMod, id: from.moduleId, port: from.portKey }
+      : { module: toMod, id: to.moduleId, port: to.portKey }
+    const inEnd  = fromDir === 'out'
+      ? { module: toMod, id: to.moduleId, port: to.portKey }
+      : { module: fromMod, id: from.moduleId, port: from.portKey }
 
     const id = nanoid()
     const conn: Connection = {
@@ -116,9 +136,16 @@ export const usePatch = create<State>((set, get) => ({
       kind: resultKind
     }
 
-    const disconnect = doConnect({ module: outEnd.module, portKey: outEnd.port }, { module: inEnd.module, portKey: inEnd.port }, resultKind)
+    const disconnect = doConnect(
+      { module: outEnd.module, portKey: outEnd.port },
+      { module: inEnd.module, portKey: inEnd.port },
+      resultKind
+    )
     ;(conn as any).__disconnect = disconnect
-    set(s => ({ connections: [...s.connections, conn], patchFrom: undefined }))
+    set(s => ({
+      connections: [...s.connections, conn],
+      patchFrom: undefined
+    }))
   },
 
   cancelPatch: () => set({ patchFrom: undefined }),
@@ -126,8 +153,14 @@ export const usePatch = create<State>((set, get) => ({
   serialize: () => {
     const { modules, connections } = get()
     return {
-      modules: modules.map(m => ({ id: m.id, type: m.type, x: m.x, y: m.y, params: m.params })),
-      connections: connections.map(c => ({ from: { id: c.from.moduleId, port: c.from.portKey }, to: { id: c.to.moduleId, port: c.to.portKey }, kind: c.kind }))
+      modules: modules.map(m => ({
+        id: m.id, type: m.type, x: m.x, y: m.y, params: m.params
+      })),
+      connections: connections.map(c => ({
+        from: { id: c.from.moduleId, port: c.from.portKey },
+        to: { id: c.to.moduleId, port: c.to.portKey },
+        kind: c.kind
+      }))
     }
   },
 
@@ -136,7 +169,15 @@ export const usePatch = create<State>((set, get) => ({
     set({ modules: [], connections: [] })
     for (const m of json.modules) {
       const tpl = getModuleTemplate(m.type)
-      const mod: ModuleInstance = { id: m.id, type: m.type, title: tpl.title, x: m.x, y: m.y, params: { ...tpl.defaults, ...m.params }, ports: tpl.ports }
+      const mod: ModuleInstance = {
+        id: m.id,
+        type: m.type,
+        title: tpl.title,
+        x: m.x,
+        y: m.y,
+        params: { ...tpl.defaults, ...m.params },
+        ports: tpl.ports
+      }
       set(s => ({ modules: [...s.modules, mod] }))
       const rt = ensureRuntime(mod); rt.update?.(mod)
     }
@@ -147,8 +188,17 @@ export const usePatch = create<State>((set, get) => ({
         const toMod = s.modules.find(mm => mm.id === c.to.id)
         if (!fromMod || !toMod) continue
         const id = nanoid()
-        const conn: Connection = { id, from: { moduleId: fromMod.id, portKey: c.from.port }, to: { moduleId: toMod.id, portKey: c.to.port }, kind: c.kind }
-        const disconnect = doConnect({ module: fromMod, portKey: c.from.port }, { module: toMod, portKey: c.to.port }, c.kind)
+        const conn: Connection = {
+          id,
+          from: { moduleId: fromMod.id, portKey: c.from.port },
+          to: { moduleId: toMod.id, portKey: c.to.port },
+          kind: c.kind
+        }
+        const disconnect = doConnect(
+          { module: fromMod, portKey: c.from.port },
+          { module: toMod, portKey: c.to.port },
+          c.kind
+        )
         ;(conn as any).__disconnect = disconnect
         next.push(conn)
       }
@@ -162,19 +212,20 @@ export const usePatch = create<State>((set, get) => ({
   }
 }))
 
-export const addModule = (type: ModuleType, coords?: Partial<Pick<ModuleInstance, 'x'|'y'>>) => usePatch.getState().addModule(type, coords)
-export const removeModule = (id: string) => usePatch.getState().removeModule(id)
-export const moveModule = (id: string, x: number, y: number) => usePatch.getState().moveModule(id, x, y)
-export const setParam = (id: string, param: string, value: any) => usePatch.getState().setParam(id, param, value)
-export const setPortPos = (id: string, port: string, pos: { x: number, y: number }) => usePatch.getState().setPortPos(id, port, pos)
-export const beginPatch = (from: { moduleId: string, portKey: string, kind: Connection['kind'] }) => usePatch.getState().beginPatch(from)
-export const updateMouse = (x: number, y: number) => usePatch.getState().updateMouse(x, y)
-export const tryCompletePatch = (to: { moduleId: string, portKey: string, kind: Connection['kind'] }) => usePatch.getState().tryCompletePatch(to)
-export const cancelPatch = () => usePatch.getState().cancelPatch()
-export const serializePatch = () => usePatch.getState().serialize()
-export const loadPatchFromJSON = (json: PatchJSON) => usePatch.getState().load(json)
-export const resetAll = () => usePatch.getState().resetAll()
+export const addModule          = (type: ModuleType, coords?: Partial<Pick<ModuleInstance, 'x'|'y'>>) => usePatch.getState().addModule(type, coords)
+export const removeModule       = (id: string) => usePatch.getState().removeModule(id)
+export const moveModule         = (id: string, x: number, y: number) => usePatch.getState().moveModule(id, x, y)
+export const setParam           = (id: string, param: string, value: any) => usePatch.getState().setParam(id, param, value)
+export const setPortPos         = (id: string, port: string, pos: { x: number, y: number }) => usePatch.getState().setPortPos(id, port, pos)
+export const beginPatch         = (from: { moduleId: string, portKey: string, kind: Connection['kind'] }) => usePatch.getState().beginPatch(from)
+export const updateMouse        = (x: number, y: number) => usePatch.getState().updateMouse(x, y)
+export const tryCompletePatch   = (to: { moduleId: string, portKey: string, kind: Connection['kind'] }) => usePatch.getState().tryCompletePatch(to)
+export const cancelPatch        = () => usePatch.getState().cancelPatch()
+export const serializePatch     = () => usePatch.getState().serialize()
+export const loadPatchFromJSON  = (json: PatchJSON) => usePatch.getState().load(json)
+export const resetAll           = () => usePatch.getState().resetAll()
 
+// De oorspronkelijke demopatch blijft staan voor referentie.
 export function loadDemoPatch() {
   const idVco = addModule('VCO', { x: 80, y: 120 })
   const idEnv = addModule('ADSR', { x: 380, y: 120 })
@@ -210,17 +261,117 @@ export function loadDemoPatch() {
     beginPatch({ moduleId: idLfo, portKey: 'out', kind: 'control' })
     usePatch.getState().tryCompletePatch({ moduleId: idFil, portKey: 'cutoffCv', kind: 'control' })
 
-        // control → control (sequencer CV modulates VCO frequency)
-        beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
-        // The VCO no longer exposes a "freq" parameter port in the UI.
-        // Instead it has a control‑rate input named "frequency".
-        // Use kind: 'control' here to reflect that this is a control connection.
-        usePatch.getState().tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
+    // control → control (sequencer CV modulates VCO frequency)
+    beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
+    // The VCO no longer exposes a "freq" parameter port in the UI.
+    // Instead it has a control‑rate input named "frequency".
+    usePatch.getState().tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
 
     beginPatch({ moduleId: idSeq, portKey: 'gate', kind: 'event' })
     usePatch.getState().tryCompletePatch({ moduleId: idEnv, portKey: 'trig', kind: 'event' })
 
     beginPatch({ moduleId: idGate, portKey: 'clockOut', kind: 'event' })
     usePatch.getState().tryCompletePatch({ moduleId: idSeq, portKey: 'clockIn', kind: 'event' })
+  }, 60)
+}
+
+// Nieuwe demofuncties om typische patch-configuraties te laten zien
+
+/**
+ * Bassline demo:
+ * - Sequencer CV moduleert de VCO‑frequentie.
+ * - Sequencer gate triggert de ADSR-envelope.
+ * - ADSR-envelope stuurt de VCA.
+ * - Audio loopt VCO → Filter → VCA → Output.
+ */
+export function loadBasslineDemo() {
+  resetAll()
+  // Modules plaatsen
+  const idVco  = addModule('VCO', { x: 80, y: 120 })
+  const idFil  = addModule('Filter', { x: 380, y: 120 })
+  const idVca  = addModule('VCA', { x: 680, y: 120 })
+  const idEnv  = addModule('ADSR', { x: 380, y: 320 })
+  const idSeq  = addModule('Sequencer16', { x: 80, y: 320 })
+  const idOut  = addModule('Output', { x: 980, y: 120 })
+  setTimeout(() => {
+    // Audio keten
+    beginPatch({ moduleId: idVco, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idFil, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idFil, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idVca, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idVca, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idOut, portKey: 'in', kind: 'audio' })
+    // ADSR naar VCA‑CV
+    beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
+    tryCompletePatch({ moduleId: idVca, portKey: 'cv', kind: 'control' })
+    // Sequencer CV naar VCO frequency
+    beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
+    tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
+    // Sequencer gate naar ADSR trigger
+    beginPatch({ moduleId: idSeq, portKey: 'gate', kind: 'event' })
+    tryCompletePatch({ moduleId: idEnv, portKey: 'trig', kind: 'event' })
+  }, 60)
+}
+
+/**
+ * LFO demo:
+ * - LFO moduleert de filtercutoff.
+ * - ADSR stuurt de VCA‑gain.
+ * - Audio loopt VCO → Filter → VCA → Output.
+ */
+export function loadLfoDemo() {
+  resetAll()
+  const idVco = addModule('VCO', { x: 80, y: 120 })
+  const idFil = addModule('Filter', { x: 380, y: 120 })
+  const idVca = addModule('VCA', { x: 680, y: 120 })
+  const idLfo = addModule('LFO', { x: 80, y: 320 })
+  const idEnv = addModule('ADSR', { x: 380, y: 320 })
+  const idOut = addModule('Output', { x: 980, y: 120 })
+  setTimeout(() => {
+    // Audio
+    beginPatch({ moduleId: idVco, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idFil, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idFil, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idVca, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idVca, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idOut, portKey: 'in', kind: 'audio' })
+    // ADSR → VCA
+    beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
+    tryCompletePatch({ moduleId: idVca, portKey: 'cv', kind: 'control' })
+    // LFO → filter cutoff
+    beginPatch({ moduleId: idLfo, portKey: 'out', kind: 'control' })
+    tryCompletePatch({ moduleId: idFil, portKey: 'cutoffCv', kind: 'control' })
+  }, 60)
+}
+
+/**
+ * FX chain demo:
+ * - Audio gaat door een effectenreeks: VCO → VCA → Mixer → Delay → Reverb → Output.
+ * - ADSR stuurt de VCA‑gain.
+ */
+export function loadFxDemo() {
+  resetAll()
+  const idVco = addModule('VCO', { x: 80, y: 120 })
+  const idVca = addModule('VCA', { x: 380, y: 120 })
+  const idMix = addModule('Mixer4', { x: 680, y: 120 })
+  const idDel = addModule('Delay', { x: 900, y: 120 })
+  const idRev = addModule('Reverb', { x: 1100, y: 120 })
+  const idEnv = addModule('ADSR', { x: 380, y: 320 })
+  const idOut = addModule('Output', { x: 1300, y: 120 })
+  setTimeout(() => {
+    // Audio: VCO → VCA → Mixer → Delay → Reverb → Output
+    beginPatch({ moduleId: idVco, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idVca, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idVca, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idMix, portKey: 'in1', kind: 'audio' })
+    beginPatch({ moduleId: idMix, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idDel, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idDel, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idRev, portKey: 'in', kind: 'audio' })
+    beginPatch({ moduleId: idRev, portKey: 'out', kind: 'audio' })
+    tryCompletePatch({ moduleId: idOut, portKey: 'in', kind: 'audio' })
+    // ADSR → VCA
+    beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
+    tryCompletePatch({ moduleId: idVca, portKey: 'cv', kind: 'control' })
   }, 60)
 }

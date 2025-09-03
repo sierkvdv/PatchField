@@ -1,7 +1,15 @@
 import React, { useEffect } from 'react'
 import * as Tone from 'tone'
 import Rack from './Rack'
-import { addModule, resetAll, serializePatch, loadPatchFromJSON, loadDemoPatch } from '../patch/store'
+import {
+  addModule,
+  resetAll,
+  serializePatch,
+  loadPatchFromJSON,
+  loadBasslineDemo,
+  loadLfoDemo,
+  loadFxDemo
+} from '../patch/store'
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -16,13 +24,16 @@ const App: React.FC = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url; a.download = `patch-${new Date().toISOString().replace(/[:.]/g,'-')}.json`; a.click()
+    a.href = url
+    a.download = `patch-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+    a.click()
     URL.revokeObjectURL(url)
   }
 
   const onLoad = () => {
     const input = document.createElement('input')
-    input.type = 'file'; input.accept = 'application/json'
+    input.type = 'file'
+    input.accept = 'application/json'
     input.onchange = async () => {
       if (!input.files?.[0]) return
       const json = JSON.parse(await input.files[0].text())
@@ -35,6 +46,7 @@ const App: React.FC = () => {
     <>
       <div className="toolbar">
         <div className="title">🔌 Modular Synth (React + Tone.js)</div>
+        {/* module knoppen */}
         <button className="btn" onClick={() => addModule('VCO')}>+ VCO</button>
         <button className="btn" onClick={() => addModule('ADSR')}>+ ADSR</button>
         <button className="btn" onClick={() => addModule('VCA')}>+ VCA</button>
@@ -52,14 +64,22 @@ const App: React.FC = () => {
         <button className="btn" onClick={() => addModule('GateClock')}>+ Gate/Clock</button>
         <button className="btn" onClick={() => addModule('Oscilloscope')}>+ Oscilloscope</button>
         <div className="spacer" />
+        {/* algemene acties */}
         <button className="btn good" onClick={startAudio}>Start Audio</button>
         <button className="btn" onClick={onSave}>Save Patch</button>
         <button className="btn" onClick={onLoad}>Load Patch</button>
-        <button className="btn danger" onClick={() => { if (confirm('Clear all modules?')) resetAll() }}>Clear</button>
-        <button className="btn" onClick={() => loadDemoPatch()}>Load Demo</button>
+        <button
+          className="btn danger"
+          onClick={() => { if (confirm('Clear all modules?')) resetAll() }}
+        >Clear</button>
+        {/* nieuwe demo knoppen */}
+        <button className="btn" onClick={() => loadBasslineDemo()}>Demo: Bassline</button>
+        <button className="btn" onClick={() => loadLfoDemo()}>Demo: LFO</button>
+        <button className="btn" onClick={() => loadFxDemo()}>Demo: FX Chain</button>
       </div>
       <Rack />
     </>
   )
 }
+
 export default App
