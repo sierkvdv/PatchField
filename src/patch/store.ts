@@ -225,7 +225,6 @@ export const serializePatch     = () => usePatch.getState().serialize()
 export const loadPatchFromJSON  = (json: PatchJSON) => usePatch.getState().load(json)
 export const resetAll           = () => usePatch.getState().resetAll()
 
-// De oorspronkelijke demopatch blijft staan voor referentie.
 export function loadDemoPatch() {
   const idVco = addModule('VCO', { x: 80, y: 120 })
   const idEnv = addModule('ADSR', { x: 380, y: 120 })
@@ -261,11 +260,12 @@ export function loadDemoPatch() {
     beginPatch({ moduleId: idLfo, portKey: 'out', kind: 'control' })
     usePatch.getState().tryCompletePatch({ moduleId: idFil, portKey: 'cutoffCv', kind: 'control' })
 
-    // control → control (sequencer CV modulates VCO frequency)
-    beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
-    // The VCO no longer exposes a "freq" parameter port in the UI.
-    // Instead it has a control‑rate input named "frequency".
-    usePatch.getState().tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
+        // control → control (sequencer CV modulates VCO frequency)
+        beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
+        // The VCO no longer exposes a "freq" parameter port in the UI.
+        // Instead it has a control‑rate input named "frequency".
+        // Use kind: 'control' here to reflect that this is a control connection.
+        usePatch.getState().tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
 
     beginPatch({ moduleId: idSeq, portKey: 'gate', kind: 'event' })
     usePatch.getState().tryCompletePatch({ moduleId: idEnv, portKey: 'trig', kind: 'event' })
@@ -275,39 +275,42 @@ export function loadDemoPatch() {
   }, 60)
 }
 
-// Nieuwe demofuncties om typische patch-configuraties te laten zien
+// Built‑in demo patches to illustrate common patching scenarios.
 
 /**
  * Bassline demo:
- * - Sequencer CV moduleert de VCO‑frequentie.
- * - Sequencer gate triggert de ADSR-envelope.
- * - ADSR-envelope stuurt de VCA.
- * - Audio loopt VCO → Filter → VCA → Output.
+ *
+ * - Sequencer CV modulates the VCO frequency (note pitches).
+ * - Sequencer gate triggers the ADSR envelope.
+ * - ADSR envelope controls the VCA gain.
+ * - Audio flows VCO → Filter → VCA → Output.
  */
 export function loadBasslineDemo() {
+  // Clear existing modules and connections
   resetAll()
-  // Modules plaatsen
+  // Create required modules with fixed coordinates for a neat layout
   const idVco  = addModule('VCO', { x: 80, y: 120 })
   const idFil  = addModule('Filter', { x: 380, y: 120 })
   const idVca  = addModule('VCA', { x: 680, y: 120 })
   const idEnv  = addModule('ADSR', { x: 380, y: 320 })
   const idSeq  = addModule('Sequencer16', { x: 80, y: 320 })
   const idOut  = addModule('Output', { x: 980, y: 120 })
+  // Defer patching slightly to allow modules to mount and register their ports
   setTimeout(() => {
-    // Audio keten
+    // Audio chain: VCO → Filter → VCA → Output
     beginPatch({ moduleId: idVco, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idFil, portKey: 'in', kind: 'audio' })
     beginPatch({ moduleId: idFil, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idVca, portKey: 'in', kind: 'audio' })
     beginPatch({ moduleId: idVca, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idOut, portKey: 'in', kind: 'audio' })
-    // ADSR naar VCA‑CV
+    // Control: ADSR envelope modulates VCA gain
     beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
     tryCompletePatch({ moduleId: idVca, portKey: 'cv', kind: 'control' })
-    // Sequencer CV naar VCO frequency
+    // Sequencer CV modulates VCO frequency (control rate)
     beginPatch({ moduleId: idSeq, portKey: 'cv', kind: 'control' })
     tryCompletePatch({ moduleId: idVco, portKey: 'frequency', kind: 'control' })
-    // Sequencer gate naar ADSR trigger
+    // Sequencer gate triggers the ADSR envelope
     beginPatch({ moduleId: idSeq, portKey: 'gate', kind: 'event' })
     tryCompletePatch({ moduleId: idEnv, portKey: 'trig', kind: 'event' })
   }, 60)
@@ -315,51 +318,56 @@ export function loadBasslineDemo() {
 
 /**
  * LFO demo:
- * - LFO moduleert de filtercutoff.
- * - ADSR stuurt de VCA‑gain.
- * - Audio loopt VCO → Filter → VCA → Output.
+ *
+ * - An LFO modulates the filter cutoff via its control output.
+ * - The VCA is opened fully (gain=1) so the signal is audible without an envelope.
+ * - Audio flows VCO → Filter → VCA → Output.
  */
 export function loadLfoDemo() {
+  // Clear existing patch
   resetAll()
+  // For this demo we only need a VCO, VCF, VCA, LFO and Output.  We omit the ADSR to keep the signal on constantly.
   const idVco = addModule('VCO', { x: 80, y: 120 })
   const idFil = addModule('Filter', { x: 380, y: 120 })
   const idVca = addModule('VCA', { x: 680, y: 120 })
   const idLfo = addModule('LFO', { x: 80, y: 320 })
-  const idEnv = addModule('ADSR', { x: 380, y: 320 })
   const idOut = addModule('Output', { x: 980, y: 120 })
+  // Turn the VCA fully open so audio is audible without an envelope
+  setParam(idVca, 'gain', 1)
   setTimeout(() => {
-    // Audio
+    // Audio path: VCO → Filter → VCA → Output
     beginPatch({ moduleId: idVco, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idFil, portKey: 'in', kind: 'audio' })
     beginPatch({ moduleId: idFil, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idVca, portKey: 'in', kind: 'audio' })
     beginPatch({ moduleId: idVca, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idOut, portKey: 'in', kind: 'audio' })
-    // ADSR → VCA
-    beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
-    tryCompletePatch({ moduleId: idVca, portKey: 'cv', kind: 'control' })
-    // LFO → filter cutoff
+    // Control: LFO modulates the filter cutoff
     beginPatch({ moduleId: idLfo, portKey: 'out', kind: 'control' })
     tryCompletePatch({ moduleId: idFil, portKey: 'cutoffCv', kind: 'control' })
-  }, 60)
+  }, 80)
 }
 
 /**
  * FX chain demo:
- * - Audio gaat door een effectenreeks: VCO → VCA → Mixer → Delay → Reverb → Output.
- * - ADSR stuurt de VCA‑gain.
+ *
+ * - Audio passes through a series of effects: VCO → VCA → Mixer → Delay → Reverb → Output.
+ * - The VCA is opened fully (gain=1) instead of using an ADSR envelope.
  */
 export function loadFxDemo() {
+  // Reset the patch before building the FX chain
   resetAll()
+  // Create modules needed for the FX chain.  We don't use an ADSR here; instead we open the VCA fully.
   const idVco = addModule('VCO', { x: 80, y: 120 })
   const idVca = addModule('VCA', { x: 380, y: 120 })
   const idMix = addModule('Mixer4', { x: 680, y: 120 })
   const idDel = addModule('Delay', { x: 900, y: 120 })
   const idRev = addModule('Reverb', { x: 1100, y: 120 })
-  const idEnv = addModule('ADSR', { x: 380, y: 320 })
   const idOut = addModule('Output', { x: 1300, y: 120 })
+  // Open the VCA fully so audio passes through continuously
+  setParam(idVca, 'gain', 1)
   setTimeout(() => {
-    // Audio: VCO → VCA → Mixer → Delay → Reverb → Output
+    // Audio chain: VCO → VCA → Mixer CH1 → Delay → Reverb → Output
     beginPatch({ moduleId: idVco, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idVca, portKey: 'in', kind: 'audio' })
     beginPatch({ moduleId: idVca, portKey: 'out', kind: 'audio' })
@@ -370,8 +378,5 @@ export function loadFxDemo() {
     tryCompletePatch({ moduleId: idRev, portKey: 'in', kind: 'audio' })
     beginPatch({ moduleId: idRev, portKey: 'out', kind: 'audio' })
     tryCompletePatch({ moduleId: idOut, portKey: 'in', kind: 'audio' })
-    // ADSR → VCA
-    beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
-    tryCompletePatch({ moduleId: idVca, portKey: 'cv', kind: 'control' })
-  }, 60)
+  }, 80)
 }
