@@ -42,7 +42,8 @@ export function createFilterRuntime(mod: ModuleInstance): ModuleRuntime {
     },
     // Update internal parameters from module params
     update: (m) => {
-      ;(f as any).type = m.params.type
+      // Set parameters explicitly to ensure immediate effect
+      f.type = m.params.type as any
       ;(f.frequency as any).value = m.params.frequency
       ;(f.Q as any).value = m.params.q
     },
@@ -67,6 +68,7 @@ export const FilterUI: React.FC<{ mod: ModuleInstance }> = ({ mod }) => (
           type="number"
           min={40}
           max={12000}
+          step={1}
           value={mod.params.frequency}
           onChange={e => {
             const val = parseFloat(e.target.value);
