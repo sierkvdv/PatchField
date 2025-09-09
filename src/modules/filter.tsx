@@ -1,21 +1,21 @@
 
-+import React from 'react'
-+import * as Tone from 'tone'
-+import { Jack } from '../ui/module/Jack'
-+import { ModuleInstance, ModuleRuntime, PortSpec } from '../patch/types'
-+import { setParam } from '../patch/store'
-+
-+// Helpers: 0..1 ↔ Hz / Q
-+const FREQ_MIN = 40, FREQ_MAX = 12000;
-+const Q_MIN = 0.1, Q_MAX = 20;
-+const clamp01 = (n:number)=>Math.min(Math.max(n,0),1);
-+const normToFreq = (n:number)=> FREQ_MIN * Math.pow(FREQ_MAX/FREQ_MIN, clamp01(n));
-+const freqToNorm = (f:number)=> {
-+  const x = Math.min(Math.max(f, FREQ_MIN), FREQ_MAX);
-+  return Math.log(x/FREQ_MIN)/Math.log(FREQ_MAX/FREQ_MIN);
-+};
-+const normToQ = (n:number)=> Q_MIN + clamp01(n) * (Q_MAX - Q_MIN);
-+const qToNorm  = (q:number)=> (Math.min(Math.max(q, Q_MIN), Q_MAX) - Q_MIN)/(Q_MAX-Q_MIN);
+import React from 'react'
+import * as Tone from 'tone'
+import { Jack } from '../ui/module/Jack'
+import { ModuleInstance, ModuleRuntime, PortSpec } from '../patch/types'
+import { setParam } from '../patch/store'
+
+// Helpers: 0..1 ↔ Hz / Q
+const FREQ_MIN = 40, FREQ_MAX = 12000;
+const Q_MIN = 0.1, Q_MAX = 20;
+const clamp01 = (n:number)=>Math.min(Math.max(n,0),1);
+const normToFreq = (n:number)=> FREQ_MIN * Math.pow(FREQ_MAX/FREQ_MIN, clamp01(n));
+const freqToNorm = (f:number)=> {
+  const x = Math.min(Math.max(f, FREQ_MIN), FREQ_MAX);
+  return Math.log(x/FREQ_MIN)/Math.log(FREQ_MAX/FREQ_MIN);
+};
+const normToQ = (n:number)=> Q_MIN + clamp01(n) * (Q_MAX - Q_MIN);
+const qToNorm  = (q:number)=> (Math.min(Math.max(q, Q_MIN), Q_MAX) - Q_MIN)/(Q_MAX-Q_MIN);
 
 export const filterTemplate = {
   title: 'Filter (VCF)',
