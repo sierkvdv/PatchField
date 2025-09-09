@@ -1,0 +1,14 @@
+{
+    "modules": [
+      { "id": "vco1",    "type": "VCO",    "x": 80,  "y": 100, "params": { "frequency": 110, "type": "sawtooth" } },
+      { "id": "vca1",    "type": "VCA",    "x": 260, "y": 100, "params": { "gain": 0.8 } },
+      { "id": "vcf1",    "type": "Filter", "x": 440, "y": 100, "params": { "type": "lowpass", "frequency": 600, "q": 0.9 } },
+      { "id": "out1",    "type": "Output", "x": 620, "y": 100, "params": {} }
+    ],
+    "connections": [
+      { "id": "c1", "from": { "moduleId": "vco1", "portKey": "out" }, "to": { "moduleId": "vca1", "portKey": "in" }, "kind": "audio" },
+      { "id": "c2", "from": { "moduleId": "vca1", "portKey": "out" }, "to": { "moduleId": "vcf1", "portKey": "in" }, "kind": "audio" },
+      { "id": "c3", "from": { "moduleId": "vcf1", "portKey": "out" }, "to": { "moduleId": "out1", "portKey": "in" }, "kind": "audio" }
+    ]
+  }
+  

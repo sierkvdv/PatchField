@@ -1,8 +1,21 @@
-import React from 'react'
-import * as Tone from 'tone'
-import { Jack } from '../ui/module/Jack'
-import { ModuleInstance, ModuleRuntime, PortSpec } from '../patch/types'
-import { setParam } from '../patch/store'
+
++import React from 'react'
++import * as Tone from 'tone'
++import { Jack } from '../ui/module/Jack'
++import { ModuleInstance, ModuleRuntime, PortSpec } from '../patch/types'
++import { setParam } from '../patch/store'
++
++// Helpers: 0..1 ↔ Hz / Q
++const FREQ_MIN = 40, FREQ_MAX = 12000;
++const Q_MIN = 0.1, Q_MAX = 20;
++const clamp01 = (n:number)=>Math.min(Math.max(n,0),1);
++const normToFreq = (n:number)=> FREQ_MIN * Math.pow(FREQ_MAX/FREQ_MIN, clamp01(n));
++const freqToNorm = (f:number)=> {
++  const x = Math.min(Math.max(f, FREQ_MIN), FREQ_MAX);
++  return Math.log(x/FREQ_MIN)/Math.log(FREQ_MAX/FREQ_MIN);
++};
++const normToQ = (n:number)=> Q_MIN + clamp01(n) * (Q_MAX - Q_MIN);
++const qToNorm  = (q:number)=> (Math.min(Math.max(q, Q_MIN), Q_MAX) - Q_MIN)/(Q_MAX-Q_MIN);
 
 export const filterTemplate = {
   title: 'Filter (VCF)',
@@ -55,52 +68,39 @@ export function createFilterRuntime(mod: ModuleInstance): ModuleRuntime {
   }
 }
 
-export const FilterUI: React.FC<{ mod: ModuleInstance }> = ({ mod }) => (
-  <div className="col">
-    <div className="row">
-      <div className="select"><label>Type</label>
-        <select value={mod.params.type} onChange={e => setParam(mod.id, 'type', e.target.value)}>
-          <option value="lowpass">low-pass</option><option value="bandpass">band-pass</option>
-        </select></div>
-      <div className="num">
-        <label>Cutoff (Hz)</label>
-        <input
-          type="number"
-          min={40}
-          max={12000}
-          step={1}
-          value={mod.params.frequency}
-          onChange={e => {
-            const val = parseFloat(e.target.value);
-            // Only update the parameter if the number is valid
-            if (!Number.isNaN(val)) {
-              setParam(mod.id, 'frequency', val);
-            }
-          }}
-        />
+export const FilterUI: React.FC<{ mod: ModuleInstance }> = ({ mod }) => {
+    const freqNorm = freqToNorm(mod.params.frequency);
+    const qNorm    = qToNorm(mod.params.q);
+    return (
+      <div className="col">
+        <div className="row">
+          <div className="select">
+            <label>Type</label>
+            <select value={mod.params.type} onChange={e => setParam(mod.id,'type',e.target.value)}>
+              <option value="lowpass">low-pass</option>
+              <option value="bandpass">band-pass</option>
+            </select>
+          </div>
+          <div className="slider">
+            <label>Cutoff</label>
+            <input type="range" min={0} max={1} step={0.001}
+                   value={freqNorm}
+                   onChange={e => setParam(mod.id,'frequency', normToFreq(parseFloat(e.target.value)))} />
+            <div className="value">{Math.round(mod.params.frequency)} Hz</div>
+          </div>
+          <div className="slider">
+           <label>Resonance (Q)</label>
+            <input type="range" min={0} max={1} step={0.01}
+                  value={qNorm}
+                  onChange={e => setParam(mod.id,'q', normToQ(parseFloat(e.target.value)))} />
+            <div className="value">{mod.params.q.toFixed(1)}</div>
+          </div>
+        </div>
+        <div className="jack-row">
+          <Jack moduleId={mod.id} portKey="in"       label="IN"        direction="in"  kind="audio" />
+          <Jack moduleId={mod.id} portKey="out"      label="OUT"       direction="out" kind="audio" />
+         <Jack moduleId={mod.id} portKey="cutoffCv" label="CUTOFF CV" direction="in"  kind="control" />
+        </div>
       </div>
-      <div className="num">
-        <label>Resonance (Q)</label>
-        <input
-          type="number"
-          min={0.1}
-          max={20}
-          step={0.1}
-          value={mod.params.q}
-          onChange={e => {
-            const val = parseFloat(e.target.value);
-            // Only update Q when the value is a valid number
-            if (!Number.isNaN(val)) {
-              setParam(mod.id, 'q', val);
-            }
-          }}
-        />
-      </div>
-    </div>
-    <div className="jack-row">
-      <Jack moduleId={mod.id} portKey="in" label="IN" direction="in" kind="audio" />
-      <Jack moduleId={mod.id} portKey="out" label="OUT" direction="out" kind="audio" />
-      <Jack moduleId={mod.id} portKey="cutoffCv" label="CUTOFF CV" direction="in" kind="control" />
-    </div>
-  </div>
-)
+    );
+  }
