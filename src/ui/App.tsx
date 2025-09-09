@@ -58,6 +58,7 @@ const App: React.FC = () => {
         <button className="btn" onClick={() => addModule('Sequencer16')}>+ Sequencer</button>
         <button className="btn" onClick={() => addModule('GateClock')}>+ Gate/Clock</button>
         <button className="btn" onClick={() => addModule('Oscilloscope')}>+ Oscilloscope</button>
+        <button className="btn" onClick={() => addModule('Output')}>+ Output</button>
         <div className="spacer" />
         <button className="btn good" onClick={() => {
           // Start audio and then start the transport; returns a promise so we can chain if needed
