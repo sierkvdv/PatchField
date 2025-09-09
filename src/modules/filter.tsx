@@ -42,10 +42,10 @@ export function createFilterRuntime(mod: ModuleInstance): ModuleRuntime {
     },
     // Update internal parameters from module params
     update: (m) => {
-      // Set parameters explicitly to ensure immediate effect
+      // Set parameters explicitly; use short ramps for audible, click-free updates
       f.type = m.params.type as any
-      ;(f.frequency as any).value = m.params.frequency
-      ;(f.Q as any).value = m.params.q
+      try { (f.frequency as any).rampTo?.(m.params.frequency, 0.01) } catch { (f.frequency as any).value = m.params.frequency }
+      try { (f.Q as any).rampTo?.(m.params.q, 0.01) } catch { (f.Q as any).value = m.params.q }
     },
     dispose: () => {
       input.dispose()
