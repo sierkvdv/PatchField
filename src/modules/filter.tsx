@@ -19,7 +19,7 @@ const qToNorm  = (q:number)=> (Math.min(Math.max(q, Q_MIN), Q_MAX) - Q_MIN)/(Q_M
 
 export const filterTemplate = {
   title: 'Filter (VCF)',
-  // + envAmt: hoeveel Hz de cutoff-CV mag optellen
+  // envAmt: hoeveel Hz de cutoffCv toevoegt
   defaults: { type: 'lowpass', frequency: 800, q: 1, envAmt: 1800 },
   ports: [
     { key: 'in', label: 'IN', direction: 'in', kind: 'audio' } as PortSpec,
@@ -40,7 +40,7 @@ export function createFilterRuntime(mod: ModuleInstance): ModuleRuntime {
   const output = new Tone.Gain(1)
   input.connect(f).connect(output)
 
-  // ---- Cutoff base + CV amount → som → f.frequency ----
+  // Base + (CV * Amount) → f.frequency
   // Base cutoff als echte frequency-signal
   const cutoffBase = new Tone.Signal(mod.params?.frequency ?? 800, 'frequency')
   // CV-in (0..1) → Gain(amount in Hz) → som
