@@ -263,6 +263,17 @@ export function loadBasslineDemo() {
     // Sequencer gate triggers the ADSR envelope
     beginPatch({ moduleId: idSeq, portKey: 'gate', kind: 'event' })
     tryCompletePatch({ moduleId: idEnv, portKey: 'trig', kind: 'event' })
+
+    // Startwaarden voor 'bass'-feel
+    setParam(idVco, 'type', 'sawtooth')
+    setParam(idVco, 'frequency', 55)   // lage A (bas-range)
+    setParam(idFil, 'frequency', 400)  // lagere cutoff
+    setParam(idFil, 'q', 9)            // duidelijke resonantie
+    setParam(idFil, 'envAmt', 1800)    // envelope-bijt
+
+    // NIEUW: ADSR → Filter.cutoff (cutoffCv)
+    beginPatch({ moduleId: idEnv, portKey: 'out', kind: 'control' })
+    tryCompletePatch({ moduleId: idFil, portKey: 'cutoffCv', kind: 'control' })
   }, 60)
 }
 
